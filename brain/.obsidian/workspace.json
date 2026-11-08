@@ -20,8 +20,219 @@
               "icon": "lucide-file",
               "title": "srs document"
             }
+          },
+          {
+            "id": "8cdbdc4dcdb86608",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "brain-ingest.md.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "brain-ingest.md"
+            }
+          },
+          {
+            "id": "ea2639f39fa7c5bc",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "skills/brain-ingest/SKILL.md.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "SKILL.md"
+            }
+          },
+          {
+            "id": "ae868f4bcbe38b19",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "skills/brain-ingest/SKILL.md.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "SKILL.md"
+            }
+          },
+          {
+            "id": "080e23dfa5fd5483",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "sqlite-acid-transactions.md 1.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "sqlite-acid-transactions.md 1"
+            }
+          },
+          {
+            "id": "92504f68d965aa5f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "skills/brain-ingest/SKILL.md.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "SKILL.md"
+            }
+          },
+          {
+            "id": "5dbd49554e0d48d3",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "inbox/double-entry-accounting.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "double-entry-accounting"
+            }
+          },
+          {
+            "id": "36a52181db20c0df",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "skills/brain-ingest/SKILL.md.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "SKILL.md"
+            }
+          },
+          {
+            "id": "72f115588392745e",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "inbox/sqlite-wal-mode.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "sqlite-wal-mode"
+            }
+          },
+          {
+            "id": "2722a1290d6b6608",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "inbox/monetory-precision.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "monetory-precision"
+            }
+          },
+          {
+            "id": "f42f7ce7a4b8e054",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "skills/brain-ingest/SKILL.md.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "SKILL.md"
+            }
+          },
+          {
+            "id": "b698f37736d9ba1c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "inbox/immutable-audit-trails-and-reversals.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "immutable-audit-trails-and-reversals"
+            }
+          },
+          {
+            "id": "8f15a09f53b20271",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "skills/brain-ingest/SKILL.md.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "SKILL.md"
+            }
+          },
+          {
+            "id": "ba6feaf0bcf08408",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "inbox/integration-testing-rollback.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "integration-testing-rollback"
+            }
+          },
+          {
+            "id": "74c5dc49ea5618a6",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "inbox/race-conditions.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "race-conditions"
+            }
+          },
+          {
+            "id": "2e9c7733d27f404c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "dummy.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "dummy"
+            }
           }
-        ]
+        ],
+        "currentTab": 15
       }
     ],
     "direction": "vertical"
@@ -188,8 +399,31 @@
       "bases:Create new base": false
     }
   },
-  "active": "24f7fdbfcb5865f9",
+  "active": "2e9c7733d27f404c",
   "lastOpenFiles": [
-    "srs document.md"
+    "skills/brain-ingest/SKILL.md.md",
+    "dummy.md",
+    "resources/sqlite-wal-mode.md",
+    "double-entry-accounting.md",
+    "sqlite-acid-transactions.md 1.md",
+    "sqlite-acid-transactions.md",
+    "resources/sqlite-acid-transactions-final.md",
+    "resources/spring-transactional.md",
+    "resources/race-conditions.md",
+    "resources/monetary-precision.md",
+    "resources/ledger-reconciliation.md",
+    "resources/integration-testing-and-rollback.md",
+    "SQLite WAL Mode and Transactions.md",
+    "resources/immutable-audit-trails-and-reversals.md",
+    "resources/double-entry-accounting.md",
+    "resources/api-idempotency-keys.md",
+    "Idempotency Keys.md",
+    "Idempotent_Transfers_FR-2.md",
+    "resources/double-entry-accounting.md.md",
+    "srs document.md",
+    "index.md",
+    "skills/brain-ingest",
+    "skills",
+    "2026-11-03.md"
   ]
 }
