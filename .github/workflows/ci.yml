@@ -1,0 +1,16 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check skill files
+        run: |
+          for d in $(find brain/skills -mindepth 1 -maxdepth 1 -type d); do
+            if [ ! -f "$d/SKILL.md" ]; then echo "Missing SKILL.md in $d"; exit 1; fi
+          done
