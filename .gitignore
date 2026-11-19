@@ -1,0 +1,7 @@
+.idea/
+target/
+*.iml
+*.db
+*.db-shm
+*.db-wal
+brain/.obsidian/
