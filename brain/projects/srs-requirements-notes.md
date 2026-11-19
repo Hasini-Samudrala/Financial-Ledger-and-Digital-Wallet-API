@@ -1,3 +1,9 @@
+---
+date: 2026-11-07
+tags:
+  - project
+source: "Team requirement notes"
+---
 financial ledger and digital wallet API 
 
 functional requirements ( main things that need to implemented for sure according to the project )
