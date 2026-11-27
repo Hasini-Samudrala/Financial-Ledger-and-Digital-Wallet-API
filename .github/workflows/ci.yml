@@ -7,10 +7,8 @@ on:
 jobs:
   checks:
     runs-on: ubuntu-latest
-
     env:
-      LEDGER_HMAC_SECRET: "ci-test-secret-key-for-ledger-integrity-123456789"
-      
+      APP_LEDGER_HMAC_SECRET: "ci-test-secret-key-for-ledger-integrity-123456789"
     steps:
       - uses: actions/checkout@v4
 
