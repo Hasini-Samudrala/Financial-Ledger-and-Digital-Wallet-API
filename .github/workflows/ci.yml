@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       APP_LEDGER_HMAC_SECRET: "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY="
+      APP_ADMIN_API_KEY: "test-admin-secret-key-for-junit"
     steps:
       - uses: actions/checkout@v4
 
