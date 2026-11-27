@@ -7,6 +7,11 @@ This vault stores research, technical decisions, project knowledge, and notes cr
 ## Quick Navigation
 
 - [[projects/srs-requirements-notes|SRS Requirements Notes]]
+- [[projects/stage-reviews|Stage Review Notes]]
+- [[projects/defect-log|Defect Log]]
+- [[projects/skill-evaluations|Skill Evaluation Evidence]]
+- **Authoritative SRS:** `brain/srs/Financial_Ledger_Digital_Wallet_SRS_v1.3.pdf` (`v1.2` retained as historical archive only)
+- **Repository Deliverables (outside vault):** `README.md`, `CHANGELOG.md`, `docs/openapi.yaml`, `docs/architecture.md`, `docs/development-plan.md`, `docs/traceability-matrix.md`, `ai-sessions/README.md`
 - [[log|Activity Log]]
 - [[AGENTS|Agent Instructions]]
 
@@ -15,6 +20,11 @@ This vault stores research, technical decisions, project knowledge, and notes cr
 Notes related to the development of our project.
 
 - [[projects/srs-requirements-notes|SRS Requirements Notes]]
+- [[projects/stage-reviews|Stage Review Notes]]
+- [[projects/defect-log|Defect Log]]
+- [[projects/skill-evaluations|Skill Evaluation Evidence]]
+- **Authoritative SRS:** `brain/srs/Financial_Ledger_Digital_Wallet_SRS_v1.3.pdf` (`v1.2` retained as historical archive only)
+- **Repository Deliverables (outside vault):** `README.md`, `CHANGELOG.md`, `docs/openapi.yaml`, `docs/architecture.md`, `docs/development-plan.md`, `docs/traceability-matrix.md`, `ai-sessions/README.md`
 
 ## Research Resources
 
@@ -34,7 +44,7 @@ Technical research used to understand and make decisions about the system.
 
 - [[resources/api-idempotency-keys|API Idempotency Keys]]
 - [[resources/race-conditions|Race Conditions]]
-- [[resources/integration-testing-rollback|Integration Testing and Rollback]]
+- [[resources/integration-testing-and-rollback|Integration Testing and Rollback]]
 
 ### Ledger Integrity
 

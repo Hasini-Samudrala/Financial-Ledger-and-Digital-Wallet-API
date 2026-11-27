@@ -64,4 +64,4 @@ The Java and SQLite pages describe how the types behave but do not say which app
 ## Related Notes
 
 - [[double-entry-accounting]]
-- [[sqlite-acid-transactions]]
+- [[sqlite-acid-transactions-final]]

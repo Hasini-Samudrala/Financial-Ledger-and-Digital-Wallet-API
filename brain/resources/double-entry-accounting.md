@@ -55,5 +55,5 @@ The source is an introduction to business accounting, not to software. It says n
 
 ## Related Notes
 
-- [[sqlite-acid-transactions]]
+- [[sqlite-acid-transactions-final]]
 - [[sqlite-wal-mode]]

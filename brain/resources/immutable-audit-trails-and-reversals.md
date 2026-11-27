@@ -55,4 +55,4 @@ The article is a 2005 draft about application state in general, and it does not 
 
 ## Related Notes
 - [[double-entry-accounting]]
-- [[sqlite-acid-transactions]]
+- [[sqlite-acid-transactions-final]]

@@ -49,7 +49,7 @@ In the default rollback mode, Bob's read could be held up while the write was be
 ## Relevance to Financial Ledger
 - **FR-3 (Concurrent Balance Mutability):** Many users will check balances while transfers are processed. WAL helps because a transfer in progress does not block balance reads, and each read sees a consistent committed state. Many readers at once is fine. Many writers at once is not possible, so simultaneous transfers are handled one after another.
 - **NFR: Concurrency Safety:** The project statement we have does not list a numbered NFR with this name. The closest items are FR-3 and TQ-4 (simultaneous transfer tests that prove race safety).
-- **WAL is only part of the answer:** Our application still needs proper transaction handling (see [[sqlite-acid-transactions]]) and error handling for `SQLITE_BUSY`. WAL makes reading and writing coexist but does not by itself make competing transfers safe.
+- **WAL is only part of the answer:** Our application still needs proper transaction handling (see [[sqlite-acid-transactions-final]]) and error handling for `SQLITE_BUSY`. WAL makes reading and writing coexist but does not by itself make competing transfers safe.
 
 ## Additional Interpretation
 *Ours, not from the docs.*
@@ -61,5 +61,5 @@ In the default rollback mode, Bob's read could be held up while the write was be
 The two pages do not explain how long a waiting writer waits or how to set up retries and timeouts for `SQLITE_BUSY`. We need another source for that before finishing FR-3.
 
 ## Related Notes
-- [[sqlite-acid-transactions]]
+- [[sqlite-acid-transactions-final]]
 - [[double-entry-accounting]]

@@ -172,17 +172,34 @@ columns are marked as proposed where Appendix B does not specify them.
 
 **Purpose:** Represents a registered user who owns wallets.
 
+> **ALIGNMENT NOTE (ADR-002):** This section has been aligned with
+> `user-wallet-design.md` and SRS v1.3 Appendix B. The earlier draft of this
+> document included an `api_key_id` column as a fourth column; that proposal
+> has been superseded. The agreed design uses three columns, with `user_id`
+> serving as the public lookup identifier embedded in the API key.
+> This requires team approval before implementation; see ADR-002.
+
   Column           Type   Rules
   ---------------- ------ -------------------
-  `api_key_id`     TEXT   NOT NULL, UNIQUE; public part of the key
-  `api_key_hash`   BLOB   NOT NULL
-  `api_key_salt`   BLOB   NOT NULL
+  `user_id`        TEXT   PRIMARY KEY; UUID; public part of the API key (lookup identifier)
+  `api_key_hash`   BLOB   NOT NULL; salted hash of the secret portion
+  `api_key_salt`   BLOB   NOT NULL; salt used when computing the hash
 
-Each API key has the form `<api_key_id>.<secret>`. The server uses api_key_id to find the row, then checks the secret against api_key_hash using api_key_salt. The format is proposed and needs team approval.
+**API key format (proposed):** `flw_<userId>.<secret>`
 
-The API key is shown to the user only once. The database stores its
-salted hash, not the original key. The admin key comes from
-configuration and is not stored in this table.
+The server extracts `userId` from the key to locate the user row, then verifies
+the `<secret>` portion against `api_key_hash` using `api_key_salt`. The `userId`
+portion is not a secret; it is a lookup identifier. The `<secret>` portion is
+cryptographically random and is never stored.
+
+The API key is shown to the user only once. The database stores only
+`api_key_hash` and `api_key_salt`, never the original key. The admin key comes
+from configuration and is not stored in this table.
+
+> **Accepted (ADR-002):** Key format `flw_<userId>.<secret>` with a
+> cryptographically random 256-bit secret, salted SHA-256 storage
+> (`SHA-256(salt || secret)`), and constant-time comparison
+> (`MessageDigest.isEqual`).
 
 ### 4.2 Wallet
 
@@ -490,13 +507,20 @@ PRAGMA journal_mode = WAL;
 
 ### 6.1 User
 
+> **ALIGNMENT NOTE:** `api_key_id` column removed to align with ADR-002 and
+> SRS Appendix B. `user_id` serves as the lookup identifier embedded in the
+> API key. See Section 4.1.
+
 ``` sql
 CREATE TABLE users (
     user_id TEXT PRIMARY KEY,
-    api_key_id TEXT NOT NULL UNIQUE,
+    username TEXT NOT NULL,
     api_key_hash BLOB NOT NULL,
     api_key_salt BLOB NOT NULL
 );
+
+CREATE UNIQUE INDEX uq_users_username_lower
+ON users(LOWER(username));
 ```
 
 ### 6.2 Wallet
@@ -1048,8 +1072,13 @@ protected:
 -   credit amount
 -   UTC timestamp
 
-The encoding must be deterministic and unambiguous. The exact encoding
-and chain boundaries are TBD-05.
+The encoding is deterministic and unambiguous (resolved under **ADR-004**):
+one global hash chain ordered by `sequence_no`, using **big-endian** fixed-width
+64-bit signed integers for numeric fields (`sequence_no`, `debit_minor`,
+`credit_minor`) and 4-byte big-endian int32 byte-length prefixes + UTF-8 bytes
+for string fields (`entry_id`, `transaction_id`, `account_id`, `currency_code`,
+`created_at` in ISO 8601 UTC), concatenated with no separators. See ADR-004 for
+the exact byte layout.
 
 ### 11.2 Chain example
 
@@ -1072,9 +1101,8 @@ Checkpoint: chain head = H3, last sequence = 3
 The first entry uses an agreed genesis hash because there is no earlier
 entry.
 
-**Proposed choice:** use SHA-256 for entry hashes and define a fixed
-genesis value. The SRS does not specify the exact hash algorithm or
-genesis value; these need approval.
+**Accepted decision (ADR-004):** use **SHA-256** for entry hashes and a
+**32-byte zero genesis hash** (`0x00` × 32).
 
 ### 11.3 IntegrityCheckpoint
 
@@ -1084,13 +1112,11 @@ The checkpoint stores:
 -   the last entry sequence number
 -   a checkpoint MAC
 
-**Proposed choice:** use HMAC-SHA-256 to authenticate a canonical
-checkpoint payload containing at least the sequence number and
-chain-head hash. The HMAC key is an external secret and must not be
-stored in SQLite or committed to the repository.
-
-The exact MAC algorithm, key rotation and recovery approach remain
-TBD-08.
+**Accepted decision (ADR-004):** use **HMAC-SHA-256** over the canonical
+checkpoint payload (`last_entry_sequence` as 8-byte big-endian int64 ||
+`chain_head_hash` as 32 bytes). The external secret (`LEDGER_HMAC_SECRET`,
+Base64-encoded, minimum 32 bytes) is loaded at startup and never stored in
+SQLite or committed to the repository.
 
 ### 11.4 Atomic checkpoint update
 
@@ -1351,16 +1377,16 @@ The endpoint must enforce wallet ownership before returning entries.
 
 ### 15.1 Existing SRS TBDs
 
-  SRS TBD   Open question
-  --------- ---------------------------------------------------------
-  TBD-01    Supported currencies and minor-unit scales
-  TBD-02    Final JSON schemas and OpenAPI definitions
-  TBD-03    Spring/SQLite write-lock integration
-  TBD-04    Idempotency-record retention policy
-  TBD-05    Ledger-entry encoding and hash-chain boundaries
-  TBD-06    SQLite durability mode, busy timeout and retry settings
-  TBD-07    Demo-funding limits and test-data reset
-  TBD-08    HMAC algorithm, key rotation and recovery
+  SRS TBD   Open question                                                 Resolution
+  --------- ------------------------------------------------------------- -------------------------
+  TBD-01    Supported currencies and minor-unit scales                    Accepted (ADR-005: INR, USD scale 2)
+  TBD-02    Final JSON schemas and OpenAPI definitions                    Accepted (ADR-006)
+  TBD-03    Spring/SQLite write-lock integration                          Accepted (ADR-003: explicit JDBC)
+  TBD-04    Idempotency-record retention policy                           Deferred (safe to defer)
+  TBD-05    Ledger-entry encoding and hash-chain boundaries               Accepted (ADR-004)
+  TBD-06    SQLite durability mode, busy timeout and retry settings       Accepted (ADR-003)
+  TBD-07    Demo-funding limits and test-data reset                       Deferred (safe to defer)
+  TBD-08    HMAC algorithm, key rotation and recovery                     Accepted (ADR-004)
 
 ### 15.2 Additional proposed database decisions
 
@@ -1406,14 +1432,15 @@ The endpoint must enforce wallet ownership before returning entries.
                                                   WALLET and
                                                   SYSTEM_FUNDING
 
-  DB-12                   Chain boundary          Propose one global
-                                                  chain
+  DB-12                   Chain boundary          Accepted (ADR-004): one
+                                                  global chain
 
-  DB-13                   Hash algorithm and      Propose SHA-256 and a
-                          genesis value           fixed genesis value
+  DB-13                   Hash algorithm and      Accepted (ADR-004):
+                          genesis value           SHA-256 and 32-byte zero
+                                                  genesis hash
 
-  DB-14                   Checkpoint MAC          Propose HMAC-SHA-256
-                          algorithm               
+  DB-14                   Checkpoint MAC          Accepted (ADR-004):
+                          algorithm               HMAC-SHA-256
 
   DB-15                   Exact response replay   Reconstruct from
                                                   transfer or decide

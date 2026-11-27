@@ -1,0 +1,710 @@
+openapi: 3.0.3
+info:
+  title: Financial Ledger & Digital Wallet API
+  version: 1.0.0
+  description: >
+    Backend REST API for multi-currency digital wallets (INR, USD), idempotent
+    transfers, double-entry ledger accounting, full reversals, hash-chain
+    integrity verification, and reconciliation.
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+security: []
+
+paths:
+  /health:
+    get:
+      summary: Public liveness check
+      operationId: getHealth
+      responses:
+        "200":
+          description: Application is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    example: UP
+
+  /users:
+    post:
+      summary: Register a new user
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterUserRequest"
+      responses:
+        "201":
+          description: User registered; API key returned once
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisteredUserResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /users/{username}/wallets:
+    post:
+      summary: Create a wallet for the authenticated user by username
+      operationId: createWalletByUsername
+      security:
+        - UserApiKey: []
+      parameters:
+        - $ref: "#/components/parameters/UsernamePath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateWalletRequest"
+      responses:
+        "201":
+          description: Wallet created with zero initial balance
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /users/{username}/wallets/{currencyCode}:
+    get:
+      summary: Retrieve a wallet by username and currency code
+      operationId: getWalletByUsernameAndCurrency
+      security:
+        - UserApiKey: []
+      parameters:
+        - $ref: "#/components/parameters/UsernamePath"
+        - name: currencyCode
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [INR, USD]
+      responses:
+        "200":
+          description: Wallet details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /wallets/{walletId}:
+    get:
+      summary: Retrieve a wallet by wallet UUID
+      operationId: getWalletById
+      security:
+        - UserApiKey: []
+      parameters:
+        - $ref: "#/components/parameters/WalletIdPath"
+      responses:
+        "200":
+          description: Wallet details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /wallets/{walletId}/ledger-entries:
+    get:
+      summary: Retrieve paginated chronological ledger history for a wallet
+      operationId: getWalletLedgerHistory
+      security:
+        - UserApiKey: []
+      parameters:
+        - $ref: "#/components/parameters/WalletIdPath"
+        - name: cursor
+          in: query
+          required: false
+          description: Exclusive sequence_no cursor (returns entries with sequenceNo > cursor). Defaults to 0.
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+            default: 0
+        - name: limit
+          in: query
+          required: false
+          description: Page size (1..100; values > 100 are clamped to 100). Defaults to 20.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: Paginated ledger entries in ascending sequence order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LedgerHistoryResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /admin/funding:
+    post:
+      summary: Fund a wallet from the currency's SYSTEM_FUNDING account
+      operationId: adminFundWallet
+      security:
+        - AdminApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FundingRequest"
+      responses:
+        "200":
+          description: Wallet funded atomically
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FundingResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+
+  /transfers:
+    post:
+      summary: Execute an idempotent wallet-to-wallet transfer
+      operationId: createTransfer
+      security:
+        - UserApiKey: []
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: Case-sensitive client key (1-64 printable ASCII characters, 0x20-0x7E)
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTransferRequest"
+      responses:
+        "201":
+          description: New transfer completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransferResponse"
+        "200":
+          description: Idempotent replay of original transfer
+          headers:
+            Idempotent-Replayed:
+              schema:
+                type: string
+                enum: ["true"]
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransferResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+
+  /transfers/{transferId}:
+    get:
+      summary: Retrieve transfer details
+      operationId: getTransfer
+      security:
+        - UserApiKey: []
+      parameters:
+        - $ref: "#/components/parameters/TransferIdPath"
+      responses:
+        "200":
+          description: Transfer details (source or destination owner)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransferResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /transfers/{transferId}/reversal:
+    post:
+      summary: Perform a full, once-only reversal of a completed transfer
+      operationId: reverseTransfer
+      security:
+        - UserApiKey: []
+      parameters:
+        - $ref: "#/components/parameters/TransferIdPath"
+      responses:
+        "201":
+          description: Compensating reversal transfer completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransferResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+
+  /admin/ledger-integrity:
+    get:
+      summary: Verify global SHA-256 hash chain and HMAC-SHA-256 checkpoint
+      operationId: verifyLedgerIntegrity
+      security:
+        - AdminApiKey: []
+      responses:
+        "200":
+          description: Read-only integrity verification report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LedgerIntegrityReport"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /admin/reconciliation:
+    get:
+      summary: Reconcile currency totals, transactions, and stored vs ledger balances
+      operationId: reconcileLedger
+      security:
+        - AdminApiKey: []
+      responses:
+        "200":
+          description: Read-only reconciliation report from a consistent snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReconciliationReport"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+components:
+  securitySchemes:
+    UserApiKey:
+      type: apiKey
+      in: header
+      name: X-User-API-Key
+      description: Format flw_<userId>.<64-hex-secret>
+    AdminApiKey:
+      type: apiKey
+      in: header
+      name: X-Admin-API-Key
+
+  parameters:
+    UsernamePath:
+      name: username
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^[A-Za-z0-9_]{3,20}$"
+    WalletIdPath:
+      name: walletId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    TransferIdPath:
+      name: transferId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    BadRequest:
+      description: Validation or currency/amount error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Unauthorized:
+      description: Missing or invalid API key
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Forbidden:
+      description: Authenticated caller does not own the requested resource
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: User, wallet, or transfer not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Conflict:
+      description: Duplicate username/wallet, idempotency conflict, insufficient funds, or non-reversible transfer
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    ServiceUnavailable:
+      description: SQLite write lock contention after bounded retries
+      headers:
+        Retry-After:
+          schema:
+            type: string
+            example: "1"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+  schemas:
+    RegisterUserRequest:
+      type: object
+      required: [username]
+      properties:
+        username:
+          type: string
+          pattern: "^[A-Za-z0-9_]{3,20}$"
+          example: alice_01
+    RegisteredUserResponse:
+      type: object
+      required: [userId, username, apiKey]
+      properties:
+        userId:
+          type: string
+          format: uuid
+        username:
+          type: string
+        apiKey:
+          type: string
+          description: Shown once only at registration
+    CreateWalletRequest:
+      type: object
+      required: [currencyCode]
+      properties:
+        currencyCode:
+          type: string
+          enum: [INR, USD]
+    WalletResponse:
+      type: object
+      required: [walletId, userId, currencyCode, balanceMinor]
+      properties:
+        walletId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        currencyCode:
+          type: string
+          enum: [INR, USD]
+        balanceMinor:
+          type: integer
+          format: int64
+          minimum: 0
+    FundingRequest:
+      type: object
+      required: [walletId, amountMinor, currencyCode]
+      properties:
+        walletId:
+          type: string
+          format: uuid
+        amountMinor:
+          type: integer
+          format: int64
+          minimum: 1
+        currencyCode:
+          type: string
+          enum: [INR, USD]
+    FundingResponse:
+      type: object
+      required: [walletId, balanceMinor, currencyCode]
+      properties:
+        walletId:
+          type: string
+          format: uuid
+        balanceMinor:
+          type: integer
+          format: int64
+        currencyCode:
+          type: string
+          enum: [INR, USD]
+    CreateTransferRequest:
+      type: object
+      required: [sourceWalletId, destinationWalletId, currencyCode, amountMinor]
+      properties:
+        sourceWalletId:
+          type: string
+          format: uuid
+        destinationWalletId:
+          type: string
+          format: uuid
+        currencyCode:
+          type: string
+          enum: [INR, USD]
+        amountMinor:
+          type: integer
+          format: int64
+          minimum: 1
+    TransferResponse:
+      type: object
+      required: [transferId, sourceWalletId, destinationWalletId, currencyCode, amountMinor, status, createdAt]
+      properties:
+        transferId:
+          type: string
+          format: uuid
+        sourceWalletId:
+          type: string
+          format: uuid
+        destinationWalletId:
+          type: string
+          format: uuid
+        currencyCode:
+          type: string
+          enum: [INR, USD]
+        amountMinor:
+          type: integer
+          format: int64
+        status:
+          type: string
+          enum: [COMPLETED, REVERSED]
+        reversalOf:
+          type: string
+          format: uuid
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+    LedgerEntryView:
+      type: object
+      required: [entryId, sequenceNo, transactionId, currencyCode, debitMinor, creditMinor, createdAt]
+      properties:
+        entryId:
+          type: string
+          format: uuid
+        sequenceNo:
+          type: integer
+          format: int64
+        transactionId:
+          type: string
+          format: uuid
+        currencyCode:
+          type: string
+          enum: [INR, USD]
+        debitMinor:
+          type: integer
+          format: int64
+        creditMinor:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+    LedgerHistoryResponse:
+      type: object
+      required: [walletId, entries]
+      properties:
+        walletId:
+          type: string
+          format: uuid
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/LedgerEntryView"
+        nextCursor:
+          type: integer
+          format: int64
+          nullable: true
+    LedgerIntegrityReport:
+      type: object
+      required: [status, totalEntries, lastSequence, chainValid, checkpointValid, details]
+      properties:
+        status:
+          type: string
+          enum: [PASS, FAIL]
+        totalEntries:
+          type: integer
+          format: int64
+        lastSequence:
+          type: integer
+          format: int64
+        chainValid:
+          type: boolean
+        checkpointValid:
+          type: boolean
+        earliestMismatchSequence:
+          type: integer
+          format: int64
+          nullable: true
+        details:
+          type: string
+    CurrencyTotal:
+      type: object
+      required: [currencyCode, totalDebitsMinor, totalCreditsMinor, balanced]
+      properties:
+        currencyCode:
+          type: string
+        totalDebitsMinor:
+          type: integer
+          format: int64
+        totalCreditsMinor:
+          type: integer
+          format: int64
+        balanced:
+          type: boolean
+    UnbalancedTransaction:
+      type: object
+      required: [transactionId, currencyCode, totalDebitsMinor, totalCreditsMinor]
+      properties:
+        transactionId:
+          type: string
+          format: uuid
+        currencyCode:
+          type: string
+        totalDebitsMinor:
+          type: integer
+          format: int64
+        totalCreditsMinor:
+          type: integer
+          format: int64
+    WalletDiscrepancy:
+      type: object
+      required: [walletId, userId, currencyCode, storedBalanceMinor, ledgerBalanceMinor, differenceMinor]
+      properties:
+        walletId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        currencyCode:
+          type: string
+        storedBalanceMinor:
+          type: integer
+          format: int64
+        ledgerBalanceMinor:
+          type: integer
+          format: int64
+        differenceMinor:
+          type: integer
+          format: int64
+    ReconciliationReport:
+      type: object
+      required: [status, currencyTotals, unbalancedTransactions, walletDiscrepancies, walletCount, matchedWalletCount, checkedAt]
+      properties:
+        status:
+          type: string
+          enum: [PASS, FAIL]
+        currencyTotals:
+          type: array
+          items:
+            $ref: "#/components/schemas/CurrencyTotal"
+        unbalancedTransactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/UnbalancedTransaction"
+        walletDiscrepancies:
+          type: array
+          items:
+            $ref: "#/components/schemas/WalletDiscrepancy"
+        walletCount:
+          type: integer
+        matchedWalletCount:
+          type: integer
+        checkedAt:
+          type: string
+          format: date-time
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum:
+                - VALIDATION_ERROR
+                - UNSUPPORTED_CURRENCY
+                - CURRENCY_MISMATCH
+                - INVALID_AMOUNT
+                - INVALID_API_KEY
+                - FORBIDDEN
+                - USER_NOT_FOUND
+                - WALLET_NOT_FOUND
+                - TRANSFER_NOT_FOUND
+                - DUPLICATE_USERNAME
+                - DUPLICATE_WALLET
+                - IDEMPOTENCY_CONFLICT
+                - INSUFFICIENT_FUNDS
+                - TRANSFER_NOT_REVERSIBLE
+                - SERVICE_UNAVAILABLE
+                - INTERNAL_ERROR
+            message:
+              type: string

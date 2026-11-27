@@ -4,10 +4,11 @@
 - **Document:** `user-wallet-design.md`
 - **Source baseline:** SRS v1.3
 - **Related designs:** `database-ledger-design.md`, `transfer-and-concurrency-design.md`
-- **Status:** Proposed technical design for team review
+- **Status:** Accepted / Superseded in part by `ADR-002`, `ADR-005`, `ADR-006`, and the username enhancement (2026-11-26)
+- **Alignment Note:** `TBD-01` (`INR`/`USD`, scale 2) and `TBD-02` (JSON contracts, error envelope, keyset pagination) are **Accepted** in `ADR-005` and `ADR-006`. User registration now requires a unique case-insensitive `username`, and wallet creation/lookup use `POST /users/{username}/wallets` and `GET /users/{username}/wallets/{currencyCode}` alongside `GET /wallets/{walletId}` while retaining internal `user_id` UUIDs. See `docs/openapi.yaml` for the active API contract.
 - **Owner:** Hasini
 - **Scope:** User registration, API key authentication, wallet creation, wallet retrieval, ownership validation and wallet ledger-history access
-- **Implementation status:** Design only; application implementation is out of scope
+- **Implementation status:** Implemented and tested locally (see `docs/traceability-matrix.md`)
 
 ---
 
@@ -71,7 +72,8 @@ The following API endpoints are covered:
 | Method | Endpoint | Responsibility |
 |---|---|---|
 | POST | `/users` | Register a user |
-| POST | `/users/{userId}/wallets` | Create a currency wallet |
+| POST | `/users/{username}/wallets` | Create a currency wallet (resolves `username` → `user_id`) |
+| GET | `/users/{username}/wallets/{currencyCode}` | Retrieve own wallet by username and currency |
 | GET | `/wallets/{walletId}` | Retrieve wallet details and balance |
 | GET | `/wallets/{walletId}/ledger-entries` | Retrieve the owner's ledger history |
 
@@ -350,7 +352,7 @@ This enforces FR-1.2 and NFR-7.
 
 ### 6.1 Endpoint
 
-`POST /users/{userId}/wallets`
+`POST /users/{username}/wallets` *(supersedes earlier draft `POST /users/{userId}/wallets`)*
 
 This endpoint creates a new wallet for an authenticated user.
 
@@ -465,7 +467,7 @@ This behaviour is defined by FR-1.3 and FR-1.4 and is covered in the database/le
 Example:
 
 ```http
-POST /users/7c6b8e3a-2d15-4c89-a123-456789abcdef/wallets
+POST /users/alice_01/wallets
 X-User-API-Key: <user-api-key>
 Content-Type: application/json
 ```
@@ -722,7 +724,8 @@ The following table summarizes the access rules.
 | Endpoint | Required credential | Authorization rule |
 |---|---|---|
 | `POST /users` | None | Local prototype registration |
-| `POST /users/{userId}/wallets` | `X-User-API-Key` | Authenticated user ID must equal path user ID |
+| `POST /users/{username}/wallets` *(supersedes earlier draft `POST /users/{userId}/wallets`)* | `X-User-API-Key` | `{username}` must resolve to the authenticated user's `user_id` |
+| `GET /users/{username}/wallets/{currencyCode}` | `X-User-API-Key` | `{username}` must resolve to the authenticated user's `user_id` |
 | `GET /wallets/{walletId}` | `X-User-API-Key` | Caller must own the wallet |
 | `GET /wallets/{walletId}/ledger-entries` | `X-User-API-Key` | Caller must own the wallet |
 | `POST /transfers` | `X-User-API-Key` | Caller must own the source wallet |

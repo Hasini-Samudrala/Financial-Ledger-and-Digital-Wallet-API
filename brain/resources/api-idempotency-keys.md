@@ -49,5 +49,5 @@ Without a key, step 4 would look like a brand-new request, and Alice would pay â
 The page is a short reference. It does not say what error a mismatched request returns or how Stripe stores keys. It also describes different behavior for API v1 and API v2, so "Stripe's behavior" is not a single rule we can copy.
 
 ## Related Notes
-- [[sqlite-acid-transactions]]
+- [[sqlite-acid-transactions-final]]
 - [[double-entry-accounting]]

@@ -1,4 +1,7 @@
 ---
+name: brain-refine
+description: Improves existing notes in the project Second Brain without changing their original meaning or introducing unsupported information.
+---
 
 # Brain Refine
 
