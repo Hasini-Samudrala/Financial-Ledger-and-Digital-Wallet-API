@@ -42,7 +42,7 @@ Follow these rules:
     - Do not list every topic the source does not discuss.
     - Never attribute external knowledge or assumptions to the original source.
 7. **Related Notes**
-    - Suggest 2–3 relevant Obsidian `[[wikilinks]]`.
+    - Suggest 2–3 relevant Obsidian wikilinks to existing vault notes.
     - Prefer notes that already exist in our vault.
     - Do not invent links to unrelated topics.
 8. **Writing Style**

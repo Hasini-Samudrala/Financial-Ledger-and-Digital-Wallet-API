@@ -1,4 +1,7 @@
 ---
+name: brain-query
+description: Answers questions about the Financial Ledger and Digital Wallet API project using information stored in the team Second Brain.
+---
 
 # Brain Query
 

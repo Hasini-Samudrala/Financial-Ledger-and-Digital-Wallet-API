@@ -1,0 +1,13 @@
+# Defect Log
+
+Only verified defects observed during development, testing, or audit inspection are recorded here.
+
+| Defect ID | Description | Severity | Detection Stage | Resolution | Verification Evidence / Status |
+|---|---|---|---|---|---|
+| `DEF-01` | `org.xerial:sqlite-jdbc:3.50.3.0` bundled SQLite 3.50.3, which is affected by the WAL-reset corruption bug (fixed in 3.51.3) | High | Design / ADR Alignment | Upgraded `sqlite-jdbc` in `pom.xml` to `3.51.3.0` | **Fixed & Verified** (`.\mvnw.cmd test` passes with `3.51.3.0`) |
+| `DEF-02` | `ADR-004` checkpoint SQL referenced `checkpoint_value` and `checkpoint_id = 'GLOBAL'` instead of `checkpoint_mac` and `checkpoint_id = 1` in `schema.sql` | Medium | ADR Alignment | Updated `ADR-004` SQL snippet to match `integrity_checkpoints` schema | **Fixed & Verified** (`DatabaseAndLedgerCoreTest`, `AdminIntegrityAndReconciliationTest`) |
+| `DEF-03` | `ADR-006` initially used `/wallets`, `/wallets/{id}/fund`, `/transfers/{id}/reverse`, `/wallets/{id}/ledger` conflicting with `user-wallet-design.md` and `architecture.md` | Medium | ADR Alignment | Aligned `ADR-006` paths and auth headers with `architecture.md` | **Fixed & Verified** (`docs/openapi.yaml` matches all 12 Spring routes) |
+| `DEF-04` | Insufficient-funds HTTP status was documented as `422` in `ADR-006`, `transfer-and-concurrency-design.md`, and `development-plan.md` instead of `409` per SRS v1.3 §3.4 | Medium | Stage 1 Implementation | Updated docs and implemented `409 INSUFFICIENT_FUNDS` | **Fixed & Verified** (`TransferAndConcurrencyIntegrationTest`, live smoke test) |
+| `DEF-05` | Spring Boot 4.1.2 removed `com.fasterxml.jackson.databind.ObjectMapper` in favor of Jackson 3 (`tools.jackson.databind.ObjectMapper`) | Low | Stage 1–2 Compile | Updated imports in `ApiKeyAuthFilter`, `SecurityConfig`, and tests | **Fixed & Verified** (compiles and passes all tests) |
+| `DEF-06` | `data/financial_ledger.db` (5 rows from pre-username manual testing) lacked the `username` column and would fail `uq_users_username_lower` index creation on startup | Medium | Targeted Audit (Phase 1) | Backed up original DB outside project directory (`financial_ledger_backup_2026-11-27.db`, SHA-256 verified) and removed stale `data/` from project working directory | **Fixed & Verified** (fresh DB initialization tested cleanly) |
+| `DEF-07` | Broken wikilinks (`sqlite-acid-transactions` in `spring-transactional.md` & `sqlite-wal-mode.md`; nonexistent `api-key-design` & `secure-password-storage` in `ADR-002`) | Low | Targeted Audit (Phase 5) | Updated to `[[sqlite-acid-transactions-final]]` and removed nonexistent links from `ADR-002` | **Fixed & Verified** (Python wikilink check = 0 broken links) |

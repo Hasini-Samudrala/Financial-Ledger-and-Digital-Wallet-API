@@ -1,4 +1,7 @@
 ---
+name: local-check
+description: Runs a consistent local build, test, and health-check verification of the Financial Ledger and Digital Wallet API before a pull request is submitted.
+---
 
 # Local Check
 
@@ -20,7 +23,7 @@ When asked to run a local check:
     
 5. Start the Spring Boot application if the project is ready to run.
     
-6. Check the application's read-only health endpoint, such as `/actuator/health`, if it is configured.
+6. Check the application's read-only health endpoint at `GET /health` as specified in SRS §3.3. If the endpoint is not yet implemented, check `/actuator/health` as a build-only proxy and note it as not yet compliant with the SRS.
     
 7. Confirm whether the application starts and responds successfully.
     
@@ -50,17 +53,15 @@ As the project develops, verify:
 
 ## Current Project Status
 
-The project has a Spring Boot and Maven bootstrap.
+Stages 1–6 (users with usernames, wallets, admin funding, idempotent transfers, reversals, paginated ledger history, ledger integrity, and reconciliation) are implemented and tested locally.
 
-Some application features and endpoints may not have been implemented yet.
-
-Do not report a missing feature as a build failure. Instead, clearly mark it as not implemented or not yet verifiable.
+External GitHub CI verification is deferred until the team pushes the repository.
 
 ## Research References
 
 Use these notes when relevant:
 
-- [[integration-testing-rollback]]
+- [[integration-testing-and-rollback]]
     
 - [[sqlite-acid-transactions-final]]
     

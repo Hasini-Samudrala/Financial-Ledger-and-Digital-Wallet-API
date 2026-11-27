@@ -54,7 +54,7 @@ These three steps are one unit. If step 1 succeeded and step 2 failed, Alice wou
 
 ## Relevance to Financial Ledger
 
-- **Database consistency during transfers:** `@Transactional` on the method that performs the whole transfer keeps the balance changes and the ledger entries all-or-nothing. This is how we get the all-or-nothing behavior described in [[sqlite-acid-transactions]] in a Spring application.
+- **Database consistency during transfers:** `@Transactional` on the method that performs the whole transfer keeps the balance changes and the ledger entries all-or-nothing. This is how we get the all-or-nothing behavior described in [[sqlite-acid-transactions-final]] in a Spring application.
 - **FR-2 (Idempotent Transfers):** `@Transactional` does not implement idempotency. It makes one attempt all-or-nothing, but it does not notice that the same request arrived twice. A client retry after a successful commit would run the transfer again. We still need the idempotency key logic in [[api-idempotency-keys]].
 - **FR-3 (Concurrent Balance Mutability):** `@Transactional` does not solve every concurrency problem. The page lists the isolation level as the database default and says nothing about locking, so how simultaneous transfers behave still depends on the database (for SQLite, see [[sqlite-wal-mode]]). Our code still has to handle errors such as `SQLITE_BUSY`.
 
@@ -73,6 +73,6 @@ These three steps are one unit. If step 1 succeeded and step 2 failed, Alice wou
 
 ## Related Notes
 
-- [[sqlite-acid-transactions]]
+- [[sqlite-acid-transactions-final]]
 - [[api-idempotency-keys]]
 - [[sqlite-wal-mode]]
